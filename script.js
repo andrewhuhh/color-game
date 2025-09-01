@@ -543,6 +543,10 @@ class ColorGuesser {
     }
     
     endGame() {
+        // Check if it's a new #1 high score BEFORE saving
+        const highScores = this.getHighScores();
+        this.isNewTopScore = highScores.length === 0 || this.score > highScores[0].score;
+        
         this.saveScore();
         this.showGameOverModal();
     }
@@ -555,11 +559,8 @@ class ColorGuesser {
         const meanDistance = this.calculateMeanDistance();
         document.getElementById('meanDistance').textContent = `${meanDistance.toFixed(2)}%`;
         
-        // Check if it's a new #1 high score
-        const highScores = this.getHighScores();
-        const isNewTopScore = highScores.length === 0 || this.score > highScores[0].score;
-        
-        if (isNewTopScore) {
+        // Use the pre-calculated high score status
+        if (this.isNewTopScore) {
             document.getElementById('highScoreDisplay').textContent = 'New High Score! 🎉';
             document.getElementById('highScoreDisplay').style.display = 'block';
         } else {
