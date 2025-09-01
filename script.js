@@ -555,11 +555,11 @@ class ColorGuesser {
         const meanDistance = this.calculateMeanDistance();
         document.getElementById('meanDistance').textContent = `${meanDistance.toFixed(2)}%`;
         
-        // Check if it's a high score
+        // Check if it's a new #1 high score
         const highScores = this.getHighScores();
-        const isHighScore = highScores.length < 10 || this.score > highScores[highScores.length - 1].score;
+        const isNewTopScore = highScores.length === 0 || this.score > highScores[0].score;
         
-        if (isHighScore) {
+        if (isNewTopScore) {
             document.getElementById('highScoreDisplay').textContent = 'New High Score! 🎉';
             document.getElementById('highScoreDisplay').style.display = 'block';
         } else {
@@ -731,10 +731,10 @@ class ColorGuesser {
                 return `
                     <div class="score-entry ${score.score === this.score ? 'current' : ''}">
                         <div class="score-placement">#${index + 1}</div>
-                        <div class="score-separator">|</div>
+                        
                         <div class="score-details">
-                            <div class="score-points">${score.score} points</div>
-                            <div class="score-mean-distance">Acc: ${meanDistance}%</div>
+                            <div class="score-points">${score.score} pts</div>
+                            <div class="score-mean-distance">Avg: ${meanDistance}%</div>
                             <div class="score-date">${score.date}</div>
                         </div>
                         <div class="colors-container">
