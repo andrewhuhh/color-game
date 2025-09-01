@@ -11,6 +11,18 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Fixed Score Display -->
+    <div class="score-display-fixed">
+        <span class="score-label">Score:</span>
+        <span class="score-value" id="scoreValue">0</span>
+    </div>
+    
+    <!-- Fixed Round Display -->
+    <div class="round-display-fixed">
+        <span class="round-label">Round:</span>
+        <span class="round-value" id="roundValue">1</span>
+    </div>
+    
     <div class="game-container">
         <!-- Color Display Area -->
         <div class="color-display" id="colorDisplay">
@@ -20,17 +32,11 @@
             </div>
         </div>
 
-        <!-- Score Display -->
-        <div class="score-container">
-            <div class="score-content">
-                <div class="score-display">
-                    <span class="score-label">Score:</span>
-                    <span class="score-value" id="scoreValue">0</span>
-                </div>
-                <div class="round-info">
-                    <span class="round-label">Round:</span>
-                    <span class="round-value" id="roundValue">1</span>
-                </div>
+        <!-- Control Buttons Bar -->
+        <div class="controls-bar">
+            <div class="control-buttons">
+                <button class="btn btn-primary" id="viewLeaderboardBtn">Scores</button>
+                <button class="btn btn-secondary" id="restartBtn">Restart</button>
             </div>
         </div>
 
@@ -43,13 +49,7 @@
         </div>
     </div>
 
-    <!-- Game Controls -->
-    <div class="controls">
-        <div class="control-buttons">
-            <button class="btn btn-primary" id="viewLeaderboardBtn">Scores</button>
-            <button class="btn btn-secondary" id="restartBtn">Restart</button>
-        </div>
-    </div>
+
 
         <!-- Result Modal -->
         <div class="result-modal" id="resultModal">

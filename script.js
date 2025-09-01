@@ -373,6 +373,11 @@ class ColorGuesser {
         const x = touch.clientX - rect.left;
         const y = touch.clientY - rect.top;
         
+        // Fade out confirm button if it's visible
+        if (this.confirmButton.classList.contains('show')) {
+            this.confirmButton.classList.add('fading');
+        }
+        
         this.updateMobilePreview(x, y);
     }
     
@@ -381,6 +386,9 @@ class ColorGuesser {
         
         event.preventDefault();
         this.isDragging = false;
+        
+        // Remove fading effect from confirm button
+        this.confirmButton.classList.remove('fading');
         
         if (this.pendingGuess) {
             this.showConfirmButton();
@@ -427,6 +435,7 @@ class ColorGuesser {
     
     hideMobileElements() {
         this.touchIndicator.classList.remove('show');
+        this.confirmButton.classList.remove('fading');
         this.hideConfirmButton();
         this.pendingGuess = null;
     }

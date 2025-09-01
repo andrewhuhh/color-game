@@ -22,6 +22,37 @@ body {
     -webkit-user-select: none;
 }
 
+/* Fixed Score and Round Displays */
+.score-display-fixed {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(4px);
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+}
+
+.round-display-fixed {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(4px);
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+}
+
 /* Game Container */
 .game-container {
     margin: 0 auto;
@@ -36,7 +67,7 @@ body {
 /* Color Display Area */
 .color-display {
     flex: 0 0 auto;
-    height: 30svh;
+    height: 40svh;
     min-height: 200px;
     position: relative;
     display: flex;
@@ -50,6 +81,7 @@ body {
     text-align: center;
     color: white;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    margin-top: 35px;
     padding: 3rem;
 }
 
@@ -66,8 +98,8 @@ body {
     font-weight: 500;
 }
 
-/* Score Container */
-.score-container {
+/* Controls Bar */
+.controls-bar {
     flex: 0 0 auto;
     display: flex;
     justify-content: center;
@@ -77,28 +109,16 @@ body {
     border-bottom: 1px solid #e2e8f0;
 }
 
-.score-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.5rem;
-    width: 100%;
-    max-width: 400px;
-}
-
-.score-display, .round-info {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.score-label, .round-label {
+/* Styles for fixed score/round displays */
+.score-display-fixed .score-label, 
+.round-display-fixed .round-label {
     font-weight: 600;
     color: #64748b;
     font-size: 0.875rem;
 }
 
-.score-value, .round-value {
+.score-display-fixed .score-value, 
+.round-display-fixed .round-value {
     font-weight: 700;
     color: #1e293b;
     font-size: 1.125rem;
@@ -174,7 +194,8 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     border: 1px solid #ffffff;
-    background: #10b981;
+    background: #fffff04f;
+    backdrop-filter: blur(4px);
     color: white;
     padding: 12px 24px;
     font-family: var(--font-primary);
@@ -184,10 +205,16 @@ body {
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
     display: none;
     z-index: 200;
+    transition: opacity 0.3s ease;
+    opacity: 1;
 }
 
 .confirm-placement.show {
     display: block;
+}
+
+.confirm-placement.fading {
+    opacity: 0.1;
 }
 
 .confirm-placement:active {
@@ -400,22 +427,11 @@ body {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* Controls */
-.controls {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 0.75rem;
-    justify-content: center;
-    z-index: 150;
-}
-
+/* Control Buttons in Score Container */
 .control-buttons {
     display: flex;
     gap: 0.75rem;
-    max-width: 400px;
+    align-items: center;
 }
 
 .btn {
@@ -559,8 +575,22 @@ body {
         font-size: 0.875rem;
     }
     
+    .score-display-fixed, .round-display-fixed {
+        padding: 0.5rem 0.75rem;
+        top: 15px;
+    }
+    
+    .score-display-fixed {
+        left: 15px;
+    }
+    
+    .round-display-fixed {
+        right: 15px;
+    }
+    
     .control-buttons {
         gap: 0.5rem;
+        justify-content: center;
     }
     
     .btn {
@@ -582,6 +612,29 @@ body {
     
     .heatmap-container {
         min-height: 200px;
+    }
+    
+    .score-display-fixed, .round-display-fixed {
+        padding: 0.5rem 0.625rem;
+        top: 10px;
+    }
+    
+    .score-display-fixed {
+        left: 10px;
+    }
+    
+    .round-display-fixed {
+        right: 10px;
+    }
+    
+    .score-display-fixed .score-label, 
+    .round-display-fixed .round-label {
+        font-size: 0.75rem;
+    }
+    
+    .score-display-fixed .score-value, 
+    .round-display-fixed .round-value {
+        font-size: 1rem;
     }
     
     .control-buttons {
