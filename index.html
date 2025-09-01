@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colorguessr</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- Color Display Area -->
+        <div class="color-display" id="colorDisplay">
+            <div class="overlay-content">
+                <h1 class="game-title">Colorguessr</h1>
+                <p class="instruction">Tap/drag on the color map to guess this color's location!</p>
+            </div>
+        </div>
+
+        <!-- Score Display -->
+        <div class="score-container">
+            <div class="score-content">
+                <div class="score-display">
+                    <span class="score-label">Score:</span>
+                    <span class="score-value" id="scoreValue">0</span>
+                </div>
+                <div class="round-info">
+                    <span class="round-label">Round:</span>
+                    <span class="round-value" id="roundValue">1</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Color Heatmap Container -->
+        <div class="heatmap-container">
+            <canvas class="color-heatmap" id="colorHeatmap" width="800" height="400"></canvas>
+            <div class="color-preview" id="colorPreview"></div>
+            <div class="touch-indicator" id="touchIndicator"></div>
+            <button class="confirm-placement" id="confirmPlacement">Confirm Placement</button>
+            
+            <!-- Game Controls -->
+            <div class="controls">
+                <div class="control-buttons">
+                    <button class="btn btn-primary" id="viewLeaderboardBtn">Scores</button>
+                    <button class="btn btn-secondary" id="restartBtn">Restart</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Modal -->
+        <div class="result-modal" id="resultModal">
+            <div class="result-content">
+                <h2 class="result-title" id="resultTitle">Round Complete!</h2>
+                <div class="result-score" id="resultScore">+0 points</div>
+                <div class="result-details">
+                    <div class="result-distance" id="resultDistance">Distance: 0°</div>
+                    <div class="color-positions">
+                        <div class="position-item">
+                            <span class="position-dot actual-dot"></span>
+                            <span class="position-label">Actual: <span id="actualPosition">0°</span></span>
+                        </div>
+                        <div class="position-item">
+                            <span class="position-dot guess-dot"></span>
+                            <span class="position-label">Your Guess: <span id="guessPosition">0°</span></span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" id="continueBtn">Continue</button>
+            </div>
+        </div>
+
+        <!-- Game Over Modal -->
+        <div class="result-modal" id="gameOverModal">
+            <div class="result-content">
+                <h2 class="result-title">Game Complete!</h2>
+                <div class="final-score">
+                    <div class="score-label">Final Score</div>
+                    <div class="score-value" id="finalScore">0</div>
+                </div>
+                <div class="high-score" id="highScoreDisplay"></div>
+                <div class="game-over-controls">
+                    <button class="btn btn-primary" id="playAgainBtn">Play Again</button>
+                    <button class="btn btn-secondary" id="viewScoresBtn">View Scores</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- High Scores Modal -->
+        <div class="result-modal" id="highScoresModal">
+            <div class="result-content">
+                <h2 class="result-title">High Scores</h2>
+                <div class="scores-list" id="scoresList"></div>
+                <div class="game-over-controls">
+                    <button class="btn btn-secondary" id="wipeScoresBtn">Wipe</button>
+                    <button class="btn btn-primary" id="closeScoresBtn">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
