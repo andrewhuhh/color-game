@@ -48,11 +48,27 @@ class ColorGuesser {
     }
     
     init() {
+        // Ensure canvas context is available
+        if (!this.ctx) {
+            console.error('Canvas context not available');
+            return;
+        }
+        
         this.setupCanvas();
         this.setupEventListeners();
-        this.drawColorHeatmap();
-        this.generateNewColor();
-        this.updateDisplay();
+        
+        // Add a small delay for mobile devices to ensure proper initialization
+        if (this.isMobile) {
+            setTimeout(() => {
+                this.drawColorHeatmap();
+                this.generateNewColor();
+                this.updateDisplay();
+            }, 100);
+        } else {
+            this.drawColorHeatmap();
+            this.generateNewColor();
+            this.updateDisplay();
+        }
     }
     
     setupCanvas() {
@@ -66,20 +82,36 @@ class ColorGuesser {
             this.canvas.style.width = rect.width + 'px';
             this.canvas.style.height = rect.height + 'px';
             
-            // Set actual canvas size (scaled for high DPI)
-            // Cap at 2x for performance while maintaining quality
-            const maxDpr = Math.min(dpr, 2);
-            this.canvas.width = rect.width * maxDpr;
-            this.canvas.height = rect.height * maxDpr;
-            
-            // Scale the drawing context to match device pixel ratio
-            this.ctx.scale(maxDpr, maxDpr);
-            
-            // Store display dimensions for calculations
+            // Store display dimensions for calculations BEFORE setting canvas size
             this.displayWidth = rect.width;
             this.displayHeight = rect.height;
-            this.scaleFactor = maxDpr;
-            this.canvasRect = null; // Reset cached canvas bounds
+            
+            // Set actual canvas size - simplified approach for mobile compatibility
+            // Use a more conservative scaling approach
+            let scaledWidth, scaledHeight;
+            if (this.isMobile) {
+                // On mobile, use simpler 1:1 scaling to avoid rendering issues
+                scaledWidth = rect.width;
+                scaledHeight = rect.height;
+                this.scaleFactor = 1;
+            } else {
+                // On desktop, use high DPI scaling but cap at 2x
+                const maxDpr = Math.min(dpr, 2);
+                scaledWidth = rect.width * maxDpr;
+                scaledHeight = rect.height * maxDpr;
+                this.scaleFactor = maxDpr;
+            }
+            
+            this.canvas.width = scaledWidth;
+            this.canvas.height = scaledHeight;
+            
+            // Reset cached canvas bounds
+            this.canvasRect = null;
+            
+            // Only apply context scaling on desktop
+            if (!this.isMobile && this.scaleFactor > 1) {
+                this.ctx.scale(this.scaleFactor, this.scaleFactor);
+            }
             
             this.drawColorHeatmap();
         };
@@ -125,55 +157,104 @@ class ColorGuesser {
         const width = this.displayWidth;
         const height = this.displayHeight;
         
-        // Clear canvas
+        if (!width || !height) {
+            console.warn('Canvas dimensions not set, skipping heatmap drawing');
+            return;
+        }
+        
+        // Clear canvas with proper dimensions based on scaling
         ctx.clearRect(0, 0, width, height);
         
         // Optimize rendering resolution for large canvases
         // Use lower resolution for rendering but scale up for display
-        const maxRenderSize = 800; // Maximum render dimensions for performance
+        const maxRenderSize = this.isMobile ? 400 : 800; // Lower resolution on mobile for performance
         const renderWidth = Math.min(width, maxRenderSize);
         const renderHeight = Math.min(height, maxRenderSize * (height / width));
         
-        // Create ImageData for better performance
-        const imageData = ctx.createImageData(renderWidth, renderHeight);
-        const data = imageData.data;
+        try {
+            // Create ImageData for better performance
+            const imageData = ctx.createImageData(renderWidth, renderHeight);
+            const data = imageData.data;
+            
+            const hueRange = 360; // Full hue spectrum
+            const lightness = 50; // Fixed lightness for consistency
+            
+            for (let y = 0; y < renderHeight; y++) {
+                for (let x = 0; x < renderWidth; x++) {
+                    // Calculate hue based on x position across full width
+                    const hue = (x / renderWidth) * hueRange;
+                    
+                    // Calculate saturation based on y position (0 at top, 100 at bottom)
+                    const saturation = (y / renderHeight) * 100;
+                    
+                    // Convert HSL to RGB for ImageData
+                    const rgb = this.hslToRgb(hue, saturation, lightness);
+                    
+                    // Set pixel data
+                    const index = (y * renderWidth + x) * 4;
+                    data[index] = rgb[0];     // Red
+                    data[index + 1] = rgb[1]; // Green
+                    data[index + 2] = rgb[2]; // Blue
+                    data[index + 3] = 255;    // Alpha
+                }
+            }
+            
+            // Create temporary canvas for rendering
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = renderWidth;
+            tempCanvas.height = renderHeight;
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            // Draw the ImageData to temporary canvas
+            tempCtx.putImageData(imageData, 0, 0);
+            
+            // Scale and draw to main canvas
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = this.isMobile ? 'medium' : 'high';
+            ctx.drawImage(tempCanvas, 0, 0, renderWidth, renderHeight, 0, 0, width, height);
+            
+            // Debug logging for mobile
+            if (this.isMobile) {
+                console.log('Heatmap drawn:', {
+                    displaySize: `${width}x${height}`,
+                    canvasSize: `${this.canvas.width}x${this.canvas.height}`,
+                    renderSize: `${renderWidth}x${renderHeight}`,
+                    scaleFactor: this.scaleFactor
+                });
+            }
+            
+        } catch (error) {
+            console.error('Error drawing heatmap:', error);
+            // Fallback: draw a simple gradient
+            this.drawFallbackHeatmap();
+        }
+    }
+    
+    drawFallbackHeatmap() {
+        const { ctx } = this;
+        const width = this.displayWidth;
+        const height = this.displayHeight;
         
-        const hueRange = 360; // Full hue spectrum
-        const lightness = 50; // Fixed lightness for consistency
+        console.log('Using fallback heatmap rendering');
         
-        for (let y = 0; y < renderHeight; y++) {
-            for (let x = 0; x < renderWidth; x++) {
-                // Calculate hue based on x position across full width
-                const hue = (x / renderWidth) * hueRange;
+        // Clear canvas
+        ctx.clearRect(0, 0, width, height);
+        
+        // Draw using CSS gradients approach - more reliable on mobile
+        const steps = this.isMobile ? 50 : 100; // Fewer steps on mobile for performance
+        const stepWidth = width / steps;
+        const stepHeight = height / steps;
+        
+        for (let x = 0; x < steps; x++) {
+            for (let y = 0; y < steps; y++) {
+                const hue = (x / steps) * 360;
+                const saturation = (y / steps) * 100;
+                const lightness = 50;
                 
-                // Calculate saturation based on y position (0 at top, 100 at bottom)
-                const saturation = (y / renderHeight) * 100;
-                
-                // Convert HSL to RGB for ImageData
-                const rgb = this.hslToRgb(hue, saturation, lightness);
-                
-                // Set pixel data
-                const index = (y * renderWidth + x) * 4;
-                data[index] = rgb[0];     // Red
-                data[index + 1] = rgb[1]; // Green
-                data[index + 2] = rgb[2]; // Blue
-                data[index + 3] = 255;    // Alpha
+                ctx.fillStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                ctx.fillRect(x * stepWidth, y * stepHeight, stepWidth + 1, stepHeight + 1);
             }
         }
-        
-        // Create temporary canvas for rendering
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = renderWidth;
-        tempCanvas.height = renderHeight;
-        const tempCtx = tempCanvas.getContext('2d');
-        
-        // Draw the ImageData to temporary canvas
-        tempCtx.putImageData(imageData, 0, 0);
-        
-        // Scale and draw to main canvas
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(tempCanvas, 0, 0, renderWidth, renderHeight, 0, 0, width, height);
     }
     
     // Utility function for HSL to RGB conversion
