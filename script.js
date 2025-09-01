@@ -15,6 +15,7 @@ class ColorGuesser {
         this.round = 1;
         this.maxRounds = 5;
         this.hasGuessed = false;
+        this.distances = []; // Track distances for mean calculation
         
         // Canvas dimensions and scaling
         this.displayWidth = 0;
@@ -29,6 +30,10 @@ class ColorGuesser {
         
         this.sessionColors = []; // Track presented colors for this session
         this.sessionGuessedColors = []; // Track guessed colors for this session
+        
+        // Confirm state for reset button
+        this.resetConfirmState = false;
+        this.resetConfirmTimeout = null;
         
         this.init();
     }
@@ -450,16 +455,20 @@ class ColorGuesser {
         const saturationDistance = Math.abs(this.guessedSaturation - this.currentSaturation);
         
         // Combined distance (weighted)
-        const combinedDistance = Math.sqrt(
+        const rawDistance = Math.sqrt(
             Math.pow(hueDistance / 360 * 100, 2) + 
             Math.pow(saturationDistance, 2)
         );
         
-        // Calculate score with exponential drop-off
+        // Convert to accuracy score (100 - distance), so higher values are better
+        const combinedDistance = Math.max(0, 100 - rawDistance);
+        
+        // Calculate score with exponential drop-off (adjusted for new distance scale)
         const maxScore = 1000;
-        const score = Math.round(maxScore * Math.pow(Math.E, -combinedDistance / 20));
+        const score = Math.round(maxScore * Math.pow(combinedDistance / 100, 2));
         
         this.score += score;
+        this.distances.push(combinedDistance); // Track distance for mean calculation
         
         // Hide previews
         this.hideColorPreview();
@@ -493,12 +502,18 @@ class ColorGuesser {
     }
     
     showResultModal(score, distance) {
-        const message = this.getCongratulatoryMessage(score);
-        document.getElementById('resultTitle').textContent = message;
         document.getElementById('resultScore').textContent = `+${score} points`;
-        document.getElementById('resultDistance').textContent = `Distance: ${Math.round(distance)}%`;
+        document.getElementById('resultDistance').textContent = `${distance.toFixed(2)}%`;
         document.getElementById('actualPosition').textContent = `H:${Math.round(this.currentHue)}° S:${Math.round(this.currentSaturation)}%`;
         document.getElementById('guessPosition').textContent = `H:${Math.round(this.guessedHue)}° S:${Math.round(this.guessedSaturation)}%`;
+        
+        // Set CSS custom properties for the colors
+        const actualColor = `hsl(${this.currentHue}, ${this.currentSaturation}%, 50%)`;
+        const guessColor = `hsl(${this.guessedHue}, ${this.guessedSaturation}%, 50%)`;
+        
+        document.documentElement.style.setProperty('--actual-color', actualColor);
+        document.documentElement.style.setProperty('--guess-color', guessColor);
+        
         document.getElementById('resultModal').classList.add('show');
     }
     
@@ -524,7 +539,12 @@ class ColorGuesser {
     }
     
     showGameOverModal() {
-        document.getElementById('finalScore').textContent = this.score;
+        const finalScoreElem = document.getElementById('finalScore');
+        finalScoreElem.innerHTML = `${this.score}<span style="font-size:1.2rem; color:#10b981; font-weight:400; margin-left:2px;">pts</span>`;
+        
+        // Show mean distance
+        const meanDistance = this.calculateMeanDistance();
+        document.getElementById('meanDistance').textContent = `${meanDistance.toFixed(2)}%`;
         
         // Check if it's a high score
         const highScores = this.getHighScores();
@@ -547,6 +567,7 @@ class ColorGuesser {
     restartGame() {
         this.score = 0;
         this.round = 1;
+        this.distances = []; // Reset distances
         this.sessionColors = []; // Reset session colors
         this.sessionGuessedColors = []; // Reset session guessed colors
         this.generateNewColor();
@@ -556,12 +577,21 @@ class ColorGuesser {
         this.hideHighScores();
     }
     
+    calculateMeanDistance() {
+        if (this.distances.length === 0) return 0;
+        const sum = this.distances.reduce((acc, dist) => acc + dist, 0);
+        return sum / this.distances.length;
+    }
+
     saveScore() {
         const scores = this.getHighScores();
+        const meanDistance = this.calculateMeanDistance();
+        const now = new Date();
         const newScore = {
             score: this.score,
-            date: new Date().toLocaleDateString(),
+            date: `${now.toLocaleDateString()} ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`,
             rounds: this.maxRounds,
+            meanDistance: meanDistance,
             presentedColors: this.getSessionColors(),
             guessedColors: this.getSessionGuessedColors()
         };
@@ -589,15 +619,48 @@ class ColorGuesser {
     }
     
     clearHighScores() {
+        const wipeBtn = document.getElementById('wipeScoresBtn');
+        
+        if (!this.resetConfirmState) {
+            // First click - enter confirm state
+            this.resetConfirmState = true;
+            wipeBtn.textContent = 'Confirm?';
+            wipeBtn.classList.add('confirm-state');
+            
+            // Reset state after 3 seconds
+            this.resetConfirmTimeout = setTimeout(() => {
+                this.resetResetButton();
+            }, 3000);
+            
+            return;
+        }
+        
+        // Second click - actually clear scores
         try {
             localStorage.removeItem('colorGuesserScores');
         } catch (e) {
             // Fallback if removeItem fails
             localStorage.setItem('colorGuesserScores', JSON.stringify([]));
         }
+        
         const scoresList = document.getElementById('scoresList');
         if (scoresList) {
             scoresList.innerHTML = '<p style="text-align: center; color: #64748b; margin: 1rem 0;">No scores yet!</p>';
+        }
+        
+        // Reset button state
+        this.resetResetButton();
+    }
+    
+    resetResetButton() {
+        const wipeBtn = document.getElementById('wipeScoresBtn');
+        this.resetConfirmState = false;
+        wipeBtn.textContent = 'Reset';
+        wipeBtn.classList.remove('confirm-state');
+        
+        if (this.resetConfirmTimeout) {
+            clearTimeout(this.resetConfirmTimeout);
+            this.resetConfirmTimeout = null;
         }
     }
     
@@ -653,12 +716,16 @@ class ColorGuesser {
                     guessedColors.push('#e2e8f0');
                 }
                 
+                // Get mean distance with fallback for older scores
+                const meanDistance = score.meanDistance !== undefined ? score.meanDistance.toFixed(2) : 'N/A';
+                
                 return `
                     <div class="score-entry ${score.score === this.score ? 'current' : ''}">
                         <div class="score-placement">#${index + 1}</div>
                         <div class="score-separator">|</div>
                         <div class="score-details">
                             <div class="score-points">${score.score} points</div>
+                            <div class="score-mean-distance">Acc: ${meanDistance}%</div>
                             <div class="score-date">${score.date}</div>
                         </div>
                         <div class="colors-container">
@@ -683,6 +750,8 @@ class ColorGuesser {
     
     hideHighScores() {
         document.getElementById('highScoresModal').classList.remove('show');
+        // Reset the confirm state when modal is closed
+        this.resetResetButton();
     }
     
     updateDisplay() {

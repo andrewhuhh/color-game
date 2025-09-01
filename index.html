@@ -54,16 +54,17 @@
         <!-- Result Modal -->
         <div class="result-modal" id="resultModal">
             <div class="result-content">
-                <h2 class="result-title" id="resultTitle">Round Complete!</h2>
-                <div class="result-score" id="resultScore">+0 points</div>
+                <div class="result-stats">
+                    <h1 class="result-distance" id="resultDistance">0%</h1>
+                    <h3 class="result-score" id="resultScore">+0 points</h3>
+                </div>
                 <div class="result-details">
-                    <div class="result-distance" id="resultDistance">Distance: 0°</div>
                     <div class="color-positions">
-                        <div class="position-item">
+                        <div class="position-item" id="actual">
                             <span class="position-dot actual-dot"></span>
                             <span class="position-label">Actual: <span id="actualPosition">0°</span></span>
                         </div>
-                        <div class="position-item">
+                        <div class="position-item" id="your-guess">
                             <span class="position-dot guess-dot"></span>
                             <span class="position-label">Your Guess: <span id="guessPosition">0°</span></span>
                         </div>
@@ -81,6 +82,10 @@
                     <div class="score-label">Final Score</div>
                     <div class="score-value" id="finalScore">0</div>
                 </div>
+                <div class="mean-distance">
+                    <div class="mean-distance-label">Average Accuracy</div>
+                    <div class="mean-distance-value" id="meanDistance">0%</div>
+                </div>
                 <div class="high-score" id="highScoreDisplay"></div>
                 <div class="game-over-controls">
                     <button class="btn btn-secondary" id="viewScoresBtn">View Scores</button>
@@ -95,8 +100,8 @@
                 <h2 class="result-title">High Scores</h2>
                 <div class="scores-list" id="scoresList"></div>
                 <div class="game-over-controls">
-                    <button class="btn btn-secondary" id="wipeScoresBtn">Wipe</button>
-                    <button class="btn btn-primary" id="closeScoresBtn">Close</button>
+                    <button class="btn btn-destructive" id="wipeScoresBtn">Reset</button>
+                    <button class="btn btn-primary" id="closeScoresBtn">Back</button>
                 </div>
             </div>
         </div>
