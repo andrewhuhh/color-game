@@ -36,7 +36,7 @@ body {
 /* Color Display Area */
 .color-display {
     flex: 0 0 auto;
-    height: 45vh;
+    height: 30svh;
     min-height: 200px;
     position: relative;
     display: flex;
@@ -478,7 +478,7 @@ body {
 /* Responsive Design */
 @media (max-width: 480px) {
     .color-display {
-        height: 45vh;
+        height: 35svh;
         min-height: 150px;
     }
     
@@ -511,7 +511,7 @@ body {
 
 @media (max-width: 360px) {
     .color-display {
-        height: 45vh;
+        height: 45svh;
         min-height: 120px;
     }
     
