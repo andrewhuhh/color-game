@@ -321,8 +321,8 @@ class ColorGuesser {
     showColorPreview(screenX, screenY, color) {
         // Position the preview slightly above and to the right of cursor to avoid blocking view
         // Using fixed positioning, so coordinates are relative to viewport
-        this.colorPreview.style.left = (screenX + 20) + 'px';
-        this.colorPreview.style.top = (screenY - 20) + 'px';
+        this.colorPreview.style.left = (screenX) + 'px';
+        this.colorPreview.style.top = (screenY - 30) + 'px';
         this.colorPreview.style.backgroundColor = color;
         this.colorPreview.classList.add('show');
     }
