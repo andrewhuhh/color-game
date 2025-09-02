@@ -269,11 +269,11 @@ body {
 }
 
 .actual-dot {
-    background: #10b981;
+    background: var(--actual-color);
 }
 
 .guess-dot {
-    background: #3b82f6;
+    background: var(--guess-color);
 }
 
 .position-label {
